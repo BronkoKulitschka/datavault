@@ -1,19 +1,19 @@
 <!doctype html>
 <!-- ============================================ -->
-<!-- LEXICANUM V0.57 - VORAB UEBERSETZT (kein Babel) -->
+<!-- DATAVAULT V0.58 - VORAB UEBERSETZT (kein Babel) -->
 <!-- ============================================ -->
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="theme-color" content="#0a0700" />
-    <title>Lexicanum 40K</title>
+    <title>Datavault</title>
     <link rel="manifest" href="manifest.json" />
     <link rel="icon" type="image/png" href="icon-192.png" />
     <link rel="apple-touch-icon" href="icon-192.png" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-title" content="Lexicanum" />
+    <meta name="apple-mobile-web-app-title" content="Datavault" />
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Cinzel+Decorative:wght@400;700&family=Share+Tech+Mono&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet" />
     <style> html,body { margin:0; background:#0a0700; } </style>
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -33,20 +33,23 @@
 const {
   useState,
   useEffect,
-  useRef
+  useRef,
+  useMemo
 } = React;
 
 /* ============================================================================
  * APP VERSION — bump this whenever the app changes, so the displayed number
  * confirms the device is running the latest uploaded file. Shown under the logo.
  * ========================================================================== */
-const APP_VERSION = "v0.57";
+const APP_VERSION = "v0.58";
 
 /* ============================================================================
- * ARTICLE IMAGES — automatic, unique ID from the article name.
- * Same djb2 hash as used to generate the prompt PDF, so the IDs match exactly.
- * Images live in ./images/ named [ID].png (main), [ID]-2.png, [ID]-3.png.
- * Up to 3 per article. Missing images simply don't render.
+ * ARTICLE SIGILS — procedural, unique per article.
+ * ----------------------------------------------------------------------------
+ * The app ships NO artwork. Every article illustration is generated at runtime
+ * as an SVG from the article name's djb2 hash, so it is deterministic (the same
+ * article always looks the same) and entirely our own work. No third-party
+ * image files are downloaded, bundled or served.
  * ========================================================================== */
 function imageIdFor(name) {
   const s = String(name || "").trim().toLowerCase();
@@ -57,12 +60,72 @@ function imageIdFor(name) {
   return h.toString(16).padStart(8, "0");
 }
 
-// Returns the candidate image sources for one article, up to 3 slots.
-// Each slot lists its filename variants in priority order (WebP first, then PNG).
-// WebP is much smaller; PNG is kept as fallback for already-made images.
-function imageSlotsFor(name) {
-  const id = imageIdFor(name);
-  return [[`images/${id}.webp`, `images/${id}.png`], [`images/${id}-2.webp`, `images/${id}-2.png`], [`images/${id}-3.webp`, `images/${id}-3.png`]];
+// Builds the geometry for one procedural sigil from a seed string.
+// Pure maths — deterministic, no files, no network.
+function sigilGeometry(seed, variant) {
+  const s = String(seed || "") + "::" + variant;
+  let h = 5381;
+  for (let i = 0; i < s.length; i++) h = h * 33 + s.charCodeAt(i) >>> 0;
+  const rnd = () => {
+    h ^= h << 13;
+    h >>>= 0;
+    h ^= h >> 17;
+    h ^= h << 5;
+    h >>>= 0;
+    return h / 4294967296;
+  };
+  const pick = (a, b) => a + Math.floor(rnd() * (b - a + 1));
+  const C = 100;
+  const poly = (sides, r, rot) => {
+    const pts = [];
+    for (let i = 0; i < sides; i++) {
+      const a = rot + i * 2 * Math.PI / sides;
+      pts.push((C + r * Math.cos(a)).toFixed(2) + "," + (C + r * Math.sin(a)).toFixed(2));
+    }
+    return pts.join(" ");
+  };
+  const rings = [];
+  const ringCount = pick(3, 5);
+  for (let i = 0; i < ringCount; i++) {
+    rings.push({
+      points: poly(pick(3, 8), 82 - i * pick(12, 18), rnd() * Math.PI * 2),
+      op: (0.5 - i * 0.07).toFixed(2)
+    });
+  }
+  const spokeCount = pick(6, 16);
+  const spokes = [];
+  const spokeRot = rnd() * Math.PI * 2;
+  for (let i = 0; i < spokeCount; i++) {
+    const a = spokeRot + i * 2 * Math.PI / spokeCount;
+    const inner = pick(20, 45),
+      outer = pick(70, 92);
+    spokes.push({
+      x1: (C + inner * Math.cos(a)).toFixed(2),
+      y1: (C + inner * Math.sin(a)).toFixed(2),
+      x2: (C + outer * Math.cos(a)).toFixed(2),
+      y2: (C + outer * Math.sin(a)).toFixed(2)
+    });
+  }
+  const ticks = [];
+  const tickCount = pick(24, 48);
+  for (let i = 0; i < tickCount; i++) {
+    const a = i * 2 * Math.PI / tickCount;
+    const len = rnd() > 0.7 ? 8 : 4;
+    ticks.push({
+      x1: (C + 92 * Math.cos(a)).toFixed(2),
+      y1: (C + 92 * Math.sin(a)).toFixed(2),
+      x2: (C + (92 - len) * Math.cos(a)).toFixed(2),
+      y2: (C + (92 - len) * Math.sin(a)).toFixed(2)
+    });
+  }
+  return {
+    rings,
+    spokes,
+    ticks,
+    core: poly(pick(3, 6), pick(10, 20), rnd() * Math.PI * 2),
+    coreRing: pick(24, 34),
+    bars: [pick(14, 30), pick(14, 30), pick(14, 30)]
+  };
 }
 
 /* ============================================================================
@@ -77,10 +140,16 @@ function imageSlotsFor(name) {
  * stricter bot protection and may refuse some requests; we therefore try
  * Fandom first and fall back to Lexicanum.
  *
- * NOTE for the standalone Play Store app: all 40K names/images are
- * © Games Workshop and these wikis are unofficial (CC-BY-SA text). Showing
- * this content verbatim in a published app carries legal risk — revisit
- * before release. For the prototype it is fine for testing.
+ * LEGAL POSTURE (as of v0.58):
+ *   - Text is fetched live and never stored, cached or bundled. The app is a
+ *     reader, not a publisher.
+ *   - No third-party artwork ships with or is loaded by the app. All article
+ *     graphics are generated procedurally at runtime (see ARTICLE SIGILS).
+ *   - The app name carries no Games Workshop trademark.
+ *   - Distribution must stay free: no price, no ads, no in-app purchases.
+ *   - Wiki text is CC-BY-SA; each article links its source for attribution.
+ *   Warhammer 40,000 and all associated marks remain © Games Workshop Ltd.
+ *   This is an unofficial, non-commercial fan project.
  * ========================================================================== */
 const WIKI_SOURCES = [{
   id: "fandom",
@@ -1504,35 +1573,107 @@ function Warhammer40KEncyclopedia() {
     });
   };
 
-  // Shows one article image, trying each source variant (webp, then png).
-  // If none load, renders nothing.
-  const ArticleImage = ({
-    sources,
-    alt
+  // Draws one procedural sigil. Nothing is loaded from anywhere — the whole
+  // figure is computed from the article name and painted as inline SVG.
+  const ArticleSigil = ({
+    seed,
+    variant = 0
   }) => {
-    const [idx, setIdx] = useState(0);
-    if (!sources || idx >= sources.length) return null;
-    return /*#__PURE__*/React.createElement("img", {
-      className: "article-image",
-      src: sources[idx],
-      alt: alt,
-      loading: "lazy",
-      onError: () => setIdx(n => n + 1)
-    });
+    const g = useMemo(() => sigilGeometry(seed, variant), [seed, variant]);
+    if (!seed) return null;
+    const line = colors.primary;
+    return /*#__PURE__*/React.createElement("div", {
+      className: "article-sigil",
+      "aria-hidden": "true"
+    }, /*#__PURE__*/React.createElement("svg", {
+      viewBox: "0 0 200 200",
+      width: "100%",
+      height: "100%",
+      preserveAspectRatio: "xMidYMid meet"
+    }, /*#__PURE__*/React.createElement("circle", {
+      cx: "100",
+      cy: "100",
+      r: "92",
+      fill: "none",
+      stroke: line,
+      strokeWidth: "0.6",
+      opacity: "0.45"
+    }), g.ticks.map((t, i) => /*#__PURE__*/React.createElement("line", {
+      key: "t" + i,
+      x1: t.x1,
+      y1: t.y1,
+      x2: t.x2,
+      y2: t.y2,
+      stroke: line,
+      strokeWidth: "0.7",
+      opacity: "0.4"
+    })), g.spokes.map((s, i) => /*#__PURE__*/React.createElement("line", {
+      key: "s" + i,
+      x1: s.x1,
+      y1: s.y1,
+      x2: s.x2,
+      y2: s.y2,
+      stroke: line,
+      strokeWidth: "0.6",
+      opacity: "0.28"
+    })), g.rings.map((r, i) => /*#__PURE__*/React.createElement("polygon", {
+      key: "r" + i,
+      points: r.points,
+      fill: "none",
+      stroke: line,
+      strokeWidth: "0.9",
+      opacity: r.op
+    })), /*#__PURE__*/React.createElement("circle", {
+      cx: "100",
+      cy: "100",
+      r: String(g.coreRing),
+      fill: "none",
+      stroke: line,
+      strokeWidth: "0.8",
+      opacity: "0.55"
+    }), /*#__PURE__*/React.createElement("polygon", {
+      points: g.core,
+      fill: line,
+      opacity: "0.22",
+      stroke: line,
+      strokeWidth: "1",
+      strokeOpacity: "0.7"
+    }), g.bars.map((w, i) => /*#__PURE__*/React.createElement("rect", {
+      key: "b" + i,
+      x: String(100 - w / 2),
+      y: String(150 + i * 7),
+      width: String(w),
+      height: "2",
+      fill: line,
+      opacity: "0.35"
+    }))));
   };
   const css = `
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
-    .article-image {
+    .article-sigil {
       display: block;
       width: 100%;
       max-width: 640px;
       aspect-ratio: 4 / 3;
-      object-fit: cover;
       margin: 16px 0;
+      padding: 10px;
       border: 1px solid ${colors.primary}66;
       box-shadow: 0 0 18px ${colors.glow};
-      background: ${colors.surface};
+      background:
+        repeating-linear-gradient(
+          0deg,
+          ${colors.primary}0d 0px,
+          ${colors.primary}0d 1px,
+          transparent 1px,
+          transparent 4px
+        ),
+        ${colors.surface};
+    }
+
+    .article-sigil svg {
+      display: block;
+      filter: drop-shadow(0 0 4px ${colors.glow});
     }
     
     .w40k-app {
@@ -2854,9 +2995,9 @@ function Warhammer40KEncyclopedia() {
     onClick: () => setShowInfo(false)
   }, "✕")), /*#__PURE__*/React.createElement("div", {
     className: "info-body"
-  }, /*#__PURE__*/React.createElement("h3", null, "Lexicanum 40K"), /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("h3", null, "Datavault"), /*#__PURE__*/React.createElement("p", {
     className: "info-ver"
-  }, "Version ", APP_VERSION, " · Prototyp"), /*#__PURE__*/React.createElement("p", null, "Eine Enzyklopädie für das Warhammer-40.000-Universum. Alle Inhalte werden live aus den Community-Wikis geladen."), /*#__PURE__*/React.createElement("h4", null, "◆ Fraktionen"), /*#__PURE__*/React.createElement("p", null, "Oben wählst du eine der sechs Fraktionen: Imperium, Chaos, Aeldari, Orks, Necrons und T'au. Jede hat ihr eigenes Farbschema und eigene Archive."), /*#__PURE__*/React.createElement("h4", null, "◆ Suche"), /*#__PURE__*/React.createElement("p", null, "Über das Suchfeld findest du Artikel aus beiden Wikis. Tippe einen Begriff ein und wähle aus den Treffern."), /*#__PURE__*/React.createElement("h4", null, "◆ Index-Übersichten"), /*#__PURE__*/React.createElement("p", null, "Jede Fraktion hat sechs Kategorien: Personen, Welten & Orte, Technologie, Waffen, Organisationen und Schlachten. Ein Tipp darauf lädt die vollständige Liste aus dem Wiki."), /*#__PURE__*/React.createElement("p", null, "Ganz oben stehen im Block ", /*#__PURE__*/React.createElement("b", null, "★ WICHTIGE"), " die zentralen Einträge. Darunter folgt die vollständige alphabetische Liste. Mit dem Filterfeld suchst du schnell in langen Listen."), /*#__PURE__*/React.createElement("h4", null, "◆ Artikel"), /*#__PURE__*/React.createElement("p", null, "Ein Tipp auf einen Eintrag öffnet den Artikeltext. Querverweise im Text sind anklickbar und führen zu verwandten Einträgen. Jeder Artikel nennt seine Quelle mit Link zum Original-Wiki."), /*#__PURE__*/React.createElement("h4", null, "◆ Zeitleiste ⧗"), /*#__PURE__*/React.createElement("p", null, "Über das Sanduhr-Symbol öffnest du die Chronik der Galaxis — von der Frühzeit bis zur aktuellen Ära. Ein Tipp auf ein Ereignis öffnet den vollständigen Artikel."), /*#__PURE__*/React.createElement("h4", null, "◆ Optionen ⚙"), /*#__PURE__*/React.createElement("p", null, "Über das Zahnrad stellst du Helligkeit, Schriftgröße und die CRT-Effekte (Scanlines, Flackern) ein oder reduzierst Bewegung."), /*#__PURE__*/React.createElement("h4", null, "◆ Quellen"), /*#__PURE__*/React.createElement("p", null, "Inhalte stammen vom Warhammer-40k-Fandom-Wiki und von Lexicanum. Alle Namen, Bilder und Inhalte sind Eigentum von Games Workshop bzw. der jeweiligen Wikis (CC-BY-SA). Diese App ist ein inoffizielles, nicht-kommerzielles Fan-Projekt."), /*#__PURE__*/React.createElement("p", {
+  }, "Version ", APP_VERSION, " · Prototyp"), /*#__PURE__*/React.createElement("p", null, "Eine Enzyklopädie für das Warhammer-40.000-Universum. Alle Inhalte werden live aus den Community-Wikis geladen."), /*#__PURE__*/React.createElement("h4", null, "◆ Fraktionen"), /*#__PURE__*/React.createElement("p", null, "Oben wählst du eine der sechs Fraktionen: Imperium, Chaos, Aeldari, Orks, Necrons und T'au. Jede hat ihr eigenes Farbschema und eigene Archive."), /*#__PURE__*/React.createElement("h4", null, "◆ Suche"), /*#__PURE__*/React.createElement("p", null, "Über das Suchfeld findest du Artikel aus beiden Wikis. Tippe einen Begriff ein und wähle aus den Treffern."), /*#__PURE__*/React.createElement("h4", null, "◆ Index-Übersichten"), /*#__PURE__*/React.createElement("p", null, "Jede Fraktion hat sechs Kategorien: Personen, Welten & Orte, Technologie, Waffen, Organisationen und Schlachten. Ein Tipp darauf lädt die vollständige Liste aus dem Wiki."), /*#__PURE__*/React.createElement("p", null, "Ganz oben stehen im Block ", /*#__PURE__*/React.createElement("b", null, "★ WICHTIGE"), " die zentralen Einträge. Darunter folgt die vollständige alphabetische Liste. Mit dem Filterfeld suchst du schnell in langen Listen."), /*#__PURE__*/React.createElement("h4", null, "◆ Artikel"), /*#__PURE__*/React.createElement("p", null, "Ein Tipp auf einen Eintrag öffnet den Artikeltext. Querverweise im Text sind anklickbar und führen zu verwandten Einträgen. Jeder Artikel nennt seine Quelle mit Link zum Original-Wiki."), /*#__PURE__*/React.createElement("h4", null, "◆ Zeitleiste ⧗"), /*#__PURE__*/React.createElement("p", null, "Über das Sanduhr-Symbol öffnest du die Chronik der Galaxis — von der Frühzeit bis zur aktuellen Ära. Ein Tipp auf ein Ereignis öffnet den vollständigen Artikel."), /*#__PURE__*/React.createElement("h4", null, "◆ Optionen ⚙"), /*#__PURE__*/React.createElement("p", null, "Über das Zahnrad stellst du Helligkeit, Schriftgröße und die CRT-Effekte (Scanlines, Flackern) ein oder reduzierst Bewegung."), /*#__PURE__*/React.createElement("h4", null, "◆ Quellen"), /*#__PURE__*/React.createElement("p", null, "Artikeltexte werden live aus dem Warhammer-40k-Fandom-Wiki und aus Lexicanum geladen und stehen unter CC-BY-SA; die Quelle ist bei jedem Artikel verlinkt. Diese App speichert keine Inhalte und enth\u00e4lt kein fremdes Bildmaterial \u2014 alle Grafiken werden zur Laufzeit selbst erzeugt. Warhammer 40.000 und alle zugeh\u00f6rigen Namen, Marken und Bilder sind Eigentum von Games Workshop Ltd. Datavault ist ein inoffizielles, nicht-kommerzielles Fan-Projekt und steht in keiner Verbindung zu Games Workshop."), /*#__PURE__*/React.createElement("p", {
     className: "info-foot"
   }, "✠ Wissen ist Macht — bewahre es gut ✠")))), showOptions && /*#__PURE__*/React.createElement("div", {
     className: "options-overlay",
@@ -2929,9 +3070,9 @@ function Warhammer40KEncyclopedia() {
     className: "aquila"
   }, activeFaction.symbol), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "logo-text"
-  }, "LEXICANUM 40K"), /*#__PURE__*/React.createElement("div", {
+  }, "DATAVAULT"), /*#__PURE__*/React.createElement("div", {
     className: "logo-sub"
-  }, "ENCYCLOPAEDIA IMPERIALIS · ", APP_VERSION))), /*#__PURE__*/React.createElement("div", {
+  }, "ARCHIVE TERMINAL · ", APP_VERSION))), /*#__PURE__*/React.createElement("div", {
     style: {
       display: "flex",
       alignItems: "center",
@@ -2990,7 +3131,7 @@ function Warhammer40KEncyclopedia() {
     className: "search-section"
   }, /*#__PURE__*/React.createElement("span", {
     className: "search-label"
-  }, "⬛ Query the Lexicanum"), /*#__PURE__*/React.createElement("div", {
+  }, "⬛ Query the Archive"), /*#__PURE__*/React.createElement("div", {
     className: "search-container"
   }, /*#__PURE__*/React.createElement("div", {
     className: "search-input-wrap"
@@ -3039,7 +3180,7 @@ function Warhammer40KEncyclopedia() {
       fontFamily: "'Cinzel', serif",
       letterSpacing: "2px"
     }
-  }, "LEXICANUM DATABASE ACCESS IN PROGRESS")), error && !isLoading && /*#__PURE__*/React.createElement("div", {
+  }, "ARCHIVE ACCESS IN PROGRESS")), error && !isLoading && /*#__PURE__*/React.createElement("div", {
     className: "error-block"
   }, /*#__PURE__*/React.createElement("div", {
     className: "error-icon"
@@ -3060,7 +3201,7 @@ function Warhammer40KEncyclopedia() {
     className: "welcome-symbol"
   }, activeFaction.symbol), /*#__PURE__*/React.createElement("div", {
     className: "welcome-title"
-  }, "The Lexicanum Awaits"), /*#__PURE__*/React.createElement("div", {
+  }, "The Archive Awaits"), /*#__PURE__*/React.createElement("div", {
     className: "welcome-subtitle"
   }, "Knowledge is Power — Guard it Well"), /*#__PURE__*/React.createElement("div", {
     className: "welcome-desc"
@@ -3288,9 +3429,9 @@ function Warhammer40KEncyclopedia() {
     className: "result-title"
   }, results.title), /*#__PURE__*/React.createElement("div", {
     className: "result-meta"
-  }, /*#__PURE__*/React.createElement("span", null, "◈ ", results.category), /*#__PURE__*/React.createElement("span", null, "◈ ", results.faction)), /*#__PURE__*/React.createElement(ArticleImage, {
-    sources: imageSlotsFor(results.title)[0],
-    alt: results.title
+  }, /*#__PURE__*/React.createElement("span", null, "◈ ", results.category), /*#__PURE__*/React.createElement("span", null, "◈ ", results.faction)), /*#__PURE__*/React.createElement(ArticleSigil, {
+    seed: imageIdFor(results.title),
+    variant: 0
   }), /*#__PURE__*/React.createElement("div", {
     className: "result-summary"
   }, renderLinkedText(results.summary)), results.sourceUrl && /*#__PURE__*/React.createElement("a", {
@@ -3316,12 +3457,12 @@ function Warhammer40KEncyclopedia() {
     className: "section-heading"
   }, section.heading), /*#__PURE__*/React.createElement("div", {
     className: "section-content"
-  }, renderLinkedText(section.content))), i === 0 && /*#__PURE__*/React.createElement(ArticleImage, {
-    sources: imageSlotsFor(results.title)[1],
-    alt: results.title
-  }), i === 1 && /*#__PURE__*/React.createElement(ArticleImage, {
-    sources: imageSlotsFor(results.title)[2],
-    alt: results.title
+  }, renderLinkedText(section.content))), i === 0 && /*#__PURE__*/React.createElement(ArticleSigil, {
+    seed: imageIdFor(results.title),
+    variant: 1
+  }), i === 1 && /*#__PURE__*/React.createElement(ArticleSigil, {
+    seed: imageIdFor(results.title),
+    variant: 2
   })))), /*#__PURE__*/React.createElement("div", {
     className: "sidebar-col"
   }, results.keyFacts?.length > 0 && /*#__PURE__*/React.createElement("div", {
@@ -3347,7 +3488,7 @@ function Warhammer40KEncyclopedia() {
     className: "related-dot"
   }), topic))))))), /*#__PURE__*/React.createElement("footer", {
     className: "footer"
-  }, "Lexicanum 40K — ", activeFaction.name, " — For the Glory of the ", activeFaction.shortName, " — In the grim darkness of the far future, there is only war")));
+  }, "DATAVAULT — ", activeFaction.name, " — ", APP_VERSION, " — Inoffizielles, nicht-kommerzielles Fan-Projekt")));
 }
 ReactDOM.createRoot(document.getElementById("root")).render(/*#__PURE__*/React.createElement(Warhammer40KEncyclopedia, null));
     </script>

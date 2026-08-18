@@ -1,8 +1,9 @@
-// Lexicanum 40K — Service Worker
-// Caches the app shell so it installs as a PWA and opens fast.
-// Wiki API requests are NEVER cached — they must always be live.
+// Datavault — Service Worker
+// Caches only the app's own shell (HTML, manifest, icons) so it installs as a
+// PWA and opens fast. Wiki content is NEVER cached: every article is fetched
+// live from the source wiki on each view. This app is a reader, not an archive.
 
-const CACHE = "lexicanum-shell-v2";
+const CACHE = "datavault-shell-v1";
 const SHELL = [
   "./",
   "./manifest.json",
@@ -29,6 +30,7 @@ self.addEventListener("install", (event) => {
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(
+    // Removes every older cache, including those from previous app names.
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
     ).then(() => self.clients.claim())

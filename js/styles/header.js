@@ -92,7 +92,7 @@ function headerStyles(colors, options) {
     }
     .faction-symbol { font-size: 14px; }
 
-    .main-content { padding: 32px 24px; max-width: 960px; margin: 0 auto; }
+    .main-content { padding: 32px 24px; max-width: ${options.contentWidth}px; margin: 0 auto; }
 
     .search-section { margin-bottom: 32px; }
 
@@ -281,6 +281,82 @@ function headerStyles(colors, options) {
 
     @keyframes blink {
       0%, 100% { opacity: 1; } 50% { opacity: 0.3; }
+    }
+
+
+    /* ── Zeitleistenzeile unter der Fraktionsleiste ─────────── */
+    .timeline-bar {
+      border-top: 1px solid ${colors.primary}33;
+      border-bottom: 1px solid ${colors.primary}44;
+      background: ${colors.surface};
+      padding: 0;
+    }
+
+    .timeline-btn {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      width: 100%;
+      max-width: ${options.contentWidth}px;
+      margin: 0 auto;
+      padding: 12px 24px;
+      background: transparent;
+      border: none;
+      border-left: 3px solid ${colors.primary};
+      color: ${colors.text};
+      font-family: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: ${options.reduceMotion ? "none" : "background 0.2s ease"};
+    }
+
+    .timeline-btn:hover,
+    .timeline-btn:focus-visible {
+      background: ${colors.primary}1a;
+      outline: none;
+    }
+
+    .timeline-btn-symbol {
+      font-size: 22px;
+      line-height: 1;
+      color: ${colors.primary};
+      text-shadow: 0 0 8px ${colors.glow};
+      flex-shrink: 0;
+    }
+
+    .timeline-btn-text {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      min-width: 0;
+    }
+
+    .timeline-btn-text b {
+      font-family: 'Cinzel', serif;
+      font-size: 13px;
+      letter-spacing: 3px;
+      color: ${colors.primary};
+    }
+
+    .timeline-btn-sub {
+      font-size: 10px;
+      letter-spacing: 1px;
+      color: ${colors.text}bb;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .timeline-btn-pfeil {
+      margin-left: auto;
+      color: ${colors.primary}bb;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 560px) {
+      .timeline-btn { padding: 11px 16px; gap: 10px; }
+      .timeline-btn-sub { display: none; }
     }
 
   `;

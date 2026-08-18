@@ -8,6 +8,7 @@ import { IMPORTANT_MAP } from "./data/important.js";
 import { MINOR_FACTIONS } from "./data/minor-factions.js";
 import { TIMELINE } from "./data/timeline.js";
 import { FACTION_INDEX_TYPES, PLACEHOLDER_QUERIES } from "./data/misc.js";
+import { DEFAULTS, OPTION_GROUPS, ladeOptionen, speichereOptionen, vergissOptionen } from "./options.js";
 import { baseStyles } from "./styles/base.js";
 import { panelStyles } from "./styles/panels.js";
 import { timelineStyles } from "./styles/timeline.js";
@@ -19,25 +20,29 @@ import { contentStyles } from "./styles/content.js";
 const { useState, useEffect, useRef, useMemo } = React;
 
 function Warhammer40KEncyclopedia() {
-  const [activeFaction, setActiveFaction] = useState(FACTIONS[0]);
+  // Einmalig beim Start aus dem Geraetespeicher lesen.
+  const [options, setOptions] = useState(ladeOptionen);
+  const [optionsGruppe, setOptionsGruppe] = useState(OPTION_GROUPS[0].id);
+
+  // Startfraktion aus den Einstellungen, sonst die erste.
+  const [activeFaction, setActiveFaction] = useState(() => {
+    const gemerkt = FACTIONS.find(f => f.id === options.startFaction);
+    return gemerkt || FACTIONS[0];
+  });
   const [showOptions, setShowOptions] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
-  const [options, setOptions] = useState({
-    brightness: 126,
-    // percent (60–160)
-    flicker: true,
-    // CRT flicker animation
-    scanlines: true,
-    // scanline overlay
-    fontScale: 100,
-    // percent (80–140)
-    reduceMotion: false // disable all animation/transition
-  });
+
   const setOption = (key, value) => setOptions(o => ({
     ...o,
     [key]: value
   }));
+
+  // Jede Aenderung sofort sichern, damit nichts verloren geht,
+  // wenn die App im Hintergrund beendet wird.
+  useEffect(() => {
+    speichereOptionen(options);
+  }, [options]);
   const [query, setQuery] = useState("");
   const [inputFocused, setInputFocused] = useState(false);
   const [category, setCategory] = useState("All");
@@ -54,6 +59,13 @@ function Warhammer40KEncyclopedia() {
   const [indexFilter, setIndexFilter] = useState("");
   const [minorFilter, setMinorFilter] = useState("");
   const inputRef = useRef(null);
+
+  // Optionaler Startfokus. Nur einmal, und nicht wenn Bewegung
+  // reduziert ist — die aufspringende Tastatur waere sonst stoerend.
+  useEffect(() => {
+    if (options.autoFocus && inputRef.current) inputRef.current.focus();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const cacheRef = useRef({});
   const topRef = useRef(null);
   const colors = activeFaction.colors;
@@ -184,7 +196,12 @@ function Warhammer40KEncyclopedia() {
     setError(null);
     setResults(null);
     setSearchHits(null);
-    const order = preferredSource ? [preferredSource, ...WIKI_SOURCES.filter(s => s.id !== preferredSource.id)] : WIKI_SOURCES;
+    // Reihenfolge: ausdruecklich gewuenschte Quelle zuerst, sonst die
+    // in den Einstellungen bevorzugte, sonst die Standardreihenfolge.
+    const bevorzugt = preferredSource || (options.preferredSource !== "auto"
+      ? WIKI_SOURCES.find(s => s.id === options.preferredSource)
+      : null);
+    const order = bevorzugt ? [bevorzugt, ...WIKI_SOURCES.filter(s => s.id !== bevorzugt.id)] : WIKI_SOURCES;
     let lastErr = null;
     for (const source of order) {
       try {
@@ -351,7 +368,15 @@ function Warhammer40KEncyclopedia() {
     contentStyles(colors, options);
 
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("style", null, css), /*#__PURE__*/React.createElement("div", {
-    className: `w40k-app${options.reduceMotion ? " no-motion" : ""}`,
+    className: [
+      "w40k-app",
+      options.reduceMotion ? "no-motion" : "",
+      options.highContrast ? "hoher-kontrast" : "",
+      options.largeTargets ? "grosse-ziele" : "",
+      options.underlineLinks ? "verweise-unterstrichen" : "",
+      options.serifBody ? "serifen" : "",
+      options.roundedCorners ? "" : "eckig"
+    ].filter(Boolean).join(" "),
     style: {
       opacity: animating ? 0 : 1,
       transition: options.reduceMotion ? "none" : "opacity 0.3s"
@@ -403,68 +428,115 @@ function Warhammer40KEncyclopedia() {
     className: "info-body"
   }, /*#__PURE__*/React.createElement("h3", null, "Datavault"), /*#__PURE__*/React.createElement("p", {
     className: "info-ver"
-  }, "Version ", APP_VERSION, " · Prototyp"), /*#__PURE__*/React.createElement("p", null, "Eine Enzyklopädie für das Warhammer-40.000-Universum. Alle Inhalte werden live aus den Community-Wikis geladen."), /*#__PURE__*/React.createElement("h4", null, "◆ Fraktionen"), /*#__PURE__*/React.createElement("p", null, "Oben wählst du eine der sechs Fraktionen: Imperium, Chaos, Aeldari, Orks, Necrons und T'au. Jede hat ihr eigenes Farbschema und eigene Archive."), /*#__PURE__*/React.createElement("h4", null, "◆ Suche"), /*#__PURE__*/React.createElement("p", null, "Über das Suchfeld findest du Artikel aus beiden Wikis. Tippe einen Begriff ein und wähle aus den Treffern."), /*#__PURE__*/React.createElement("h4", null, "◆ Index-Übersichten"), /*#__PURE__*/React.createElement("p", null, "Jede Fraktion hat sechs Kategorien: Personen, Welten & Orte, Technologie, Waffen, Organisationen und Schlachten. Ein Tipp darauf lädt die vollständige Liste aus dem Wiki."), /*#__PURE__*/React.createElement("p", null, "Ganz oben stehen im Block ", /*#__PURE__*/React.createElement("b", null, "★ WICHTIGE"), " die zentralen Einträge. Darunter folgt die vollständige alphabetische Liste. Mit dem Filterfeld suchst du schnell in langen Listen."), /*#__PURE__*/React.createElement("h4", null, "◆ Artikel"), /*#__PURE__*/React.createElement("p", null, "Ein Tipp auf einen Eintrag öffnet den Artikeltext. Querverweise im Text sind anklickbar und führen zu verwandten Einträgen. Jeder Artikel nennt seine Quelle mit Link zum Original-Wiki."), /*#__PURE__*/React.createElement("h4", null, "◆ Zeitleiste ⧗"), /*#__PURE__*/React.createElement("p", null, "Über das Sanduhr-Symbol öffnest du die Chronik der Galaxis — von der Frühzeit bis zur aktuellen Ära. Ein Tipp auf ein Ereignis öffnet den vollständigen Artikel."), /*#__PURE__*/React.createElement("h4", null, "◆ Optionen ⚙"), /*#__PURE__*/React.createElement("p", null, "Über das Zahnrad stellst du Helligkeit, Schriftgröße und die CRT-Effekte (Scanlines, Flackern) ein oder reduzierst Bewegung."), /*#__PURE__*/React.createElement("h4", null, "◆ Quellen"), /*#__PURE__*/React.createElement("p", null, "Artikeltexte werden live aus dem Warhammer-40k-Fandom-Wiki und aus Lexicanum geladen und stehen unter CC-BY-SA; die Quelle ist bei jedem Artikel verlinkt. Diese App speichert keine Inhalte und enth\u00e4lt kein fremdes Bildmaterial \u2014 alle Grafiken werden zur Laufzeit selbst erzeugt. Warhammer 40.000 und alle zugeh\u00f6rigen Namen, Marken und Bilder sind Eigentum von Games Workshop Ltd. Datavault ist ein inoffizielles, nicht-kommerzielles Fan-Projekt und steht in keiner Verbindung zu Games Workshop."), /*#__PURE__*/React.createElement("p", {
+  }, "Version ", APP_VERSION, " · Prototyp"), /*#__PURE__*/React.createElement("p", null, "Eine Enzyklopädie für das Warhammer-40.000-Universum. Alle Inhalte werden live aus den Community-Wikis geladen."), /*#__PURE__*/React.createElement("h4", null, "◆ Fraktionen"), /*#__PURE__*/React.createElement("p", null, "Oben wählst du eine der sechs Fraktionen: Imperium, Chaos, Aeldari, Orks, Necrons und T'au. Jede hat ihr eigenes Farbschema und eigene Archive."), /*#__PURE__*/React.createElement("h4", null, "◆ Suche"), /*#__PURE__*/React.createElement("p", null, "Über das Suchfeld findest du Artikel aus beiden Wikis. Tippe einen Begriff ein und wähle aus den Treffern."), /*#__PURE__*/React.createElement("h4", null, "◆ Index-Übersichten"), /*#__PURE__*/React.createElement("p", null, "Jede Fraktion hat sechs Kategorien: Personen, Welten & Orte, Technologie, Waffen, Organisationen und Schlachten. Ein Tipp darauf lädt die vollständige Liste aus dem Wiki."), /*#__PURE__*/React.createElement("p", null, "Ganz oben stehen im Block ", /*#__PURE__*/React.createElement("b", null, "★ WICHTIGE"), " die zentralen Einträge. Darunter folgt die vollständige alphabetische Liste. Mit dem Filterfeld suchst du schnell in langen Listen."), /*#__PURE__*/React.createElement("h4", null, "◆ Artikel"), /*#__PURE__*/React.createElement("p", null, "Ein Tipp auf einen Eintrag öffnet den Artikeltext. Querverweise im Text sind anklickbar und führen zu verwandten Einträgen. Jeder Artikel nennt seine Quelle mit Link zum Original-Wiki."), /*#__PURE__*/React.createElement("h4", null, "◆ Zeitleiste ⧗"), /*#__PURE__*/React.createElement("p", null, "Die Schaltfläche unter der Fraktionsleiste öffnet die Chronik der Galaxis — von der Frühzeit bis zur aktuellen Ära. Ein Tipp auf ein Ereignis öffnet den vollständigen Artikel."), /*#__PURE__*/React.createElement("h4", null, "◆ Optionen ⚙"), /*#__PURE__*/React.createElement("p", null, "Über das Zahnrad erreichst du vier Bereiche: Darstellung (Schrift, Zeilenabstand, Textbreite), CRT-Effekte (Helligkeit, Leuchten, Scanlines, Flackern), Verhalten (Startfraktion, bevorzugtes Wiki, Sigillen) und Barrierefreiheit (hoher Kontrast, Bewegung, größere Schaltflächen). Alle Einstellungen bleiben auf diesem Gerät erhalten."), /*#__PURE__*/React.createElement("h4", null, "◆ Quellen"), /*#__PURE__*/React.createElement("p", null, "Artikeltexte werden live aus dem Warhammer-40k-Fandom-Wiki und aus Lexicanum geladen und stehen unter CC-BY-SA; die Quelle ist bei jedem Artikel verlinkt. Diese App speichert keine Inhalte und enth\u00e4lt kein fremdes Bildmaterial \u2014 alle Grafiken werden zur Laufzeit selbst erzeugt. Warhammer 40.000 und alle zugeh\u00f6rigen Namen, Marken und Bilder sind Eigentum von Games Workshop Ltd. Datavault ist ein inoffizielles, nicht-kommerzielles Fan-Projekt und steht in keiner Verbindung zu Games Workshop."), /*#__PURE__*/React.createElement("p", {
     className: "info-foot"
   }, "✠ Wissen ist Macht — bewahre es gut ✠")))), showOptions && /*#__PURE__*/React.createElement("div", {
     className: "options-overlay",
     onClick: () => setShowOptions(false)
   }, /*#__PURE__*/React.createElement("div", {
-    className: "options-panel",
+    className: "options-panel options-panel-gross",
     onClick: e => e.stopPropagation()
   }, /*#__PURE__*/React.createElement("div", {
     className: "options-head"
-  }, /*#__PURE__*/React.createElement("span", null, "⚙ OPTIONEN"), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", null, "\u2699 OPTIONEN"), /*#__PURE__*/React.createElement("button", {
     className: "options-close",
-    onClick: () => setShowOptions(false)
-  }, "✕")), /*#__PURE__*/React.createElement("div", {
-    className: "option-row"
-  }, /*#__PURE__*/React.createElement("label", null, "Helligkeit: ", options.brightness, "%"), /*#__PURE__*/React.createElement("input", {
-    type: "range",
-    min: "60",
-    max: "160",
-    value: options.brightness,
-    onChange: e => setOption("brightness", Number(e.target.value))
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "option-row"
-  }, /*#__PURE__*/React.createElement("label", null, "Schriftgröße: ", options.fontScale, "%"), /*#__PURE__*/React.createElement("input", {
-    type: "range",
-    min: "80",
-    max: "140",
-    value: options.fontScale,
-    onChange: e => setOption("fontScale", Number(e.target.value))
-  })), /*#__PURE__*/React.createElement("div", {
-    className: "option-row toggle",
-    onClick: () => setOption("scanlines", !options.scanlines)
-  }, /*#__PURE__*/React.createElement("label", null, "Scanlines"), /*#__PURE__*/React.createElement("span", {
-    className: `switch ${options.scanlines ? "on" : ""}`
+    onClick: () => setShowOptions(false),
+    "aria-label": "Optionen schließen"
+  }, "\u2715")),
+
+  // Reiterleiste der Gruppen
+  /*#__PURE__*/React.createElement("div", {
+    className: "options-tabs",
+    role: "tablist"
+  }, OPTION_GROUPS.map(gruppe => /*#__PURE__*/React.createElement("button", {
+    key: gruppe.id,
+    className: `options-tab ${optionsGruppe === gruppe.id ? "active" : ""}`,
+    role: "tab",
+    "aria-selected": optionsGruppe === gruppe.id,
+    onClick: () => setOptionsGruppe(gruppe.id)
   }, /*#__PURE__*/React.createElement("span", {
-    className: "knob"
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "option-row toggle",
-    onClick: () => setOption("flicker", !options.flicker)
-  }, /*#__PURE__*/React.createElement("label", null, "CRT-Flackern"), /*#__PURE__*/React.createElement("span", {
-    className: `switch ${options.flicker ? "on" : ""}`
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "knob"
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "option-row toggle",
-    onClick: () => setOption("reduceMotion", !options.reduceMotion)
-  }, /*#__PURE__*/React.createElement("label", null, "Bewegung reduzieren"), /*#__PURE__*/React.createElement("span", {
-    className: `switch ${options.reduceMotion ? "on" : ""}`
-  }, /*#__PURE__*/React.createElement("span", {
-    className: "knob"
-  }))), /*#__PURE__*/React.createElement("button", {
+    className: "options-tab-symbol"
+  }, gruppe.symbol), gruppe.titel))),
+
+  // Inhalt der gewaehlten Gruppe — baut sich aus OPTION_GROUPS auf
+  /*#__PURE__*/React.createElement("div", {
+    className: "options-body"
+  }, OPTION_GROUPS.filter(g => g.id === optionsGruppe).map(gruppe => /*#__PURE__*/React.createElement("div", {
+    key: gruppe.id,
+    className: "options-group"
+  }, gruppe.optionen.map(o => {
+    // Abhaengige Optionen ausblenden, wenn ihr Schalter aus ist
+    if (o.nurWenn && !options[o.nurWenn]) return null;
+
+    if (o.typ === "regler") {
+      return /*#__PURE__*/React.createElement("div", {
+        key: o.key,
+        className: "option-row"
+      }, /*#__PURE__*/React.createElement("label", {
+        htmlFor: "opt-" + o.key
+      }, o.label, ": ", /*#__PURE__*/React.createElement("b", null, options[o.key], o.einheit || "")), /*#__PURE__*/React.createElement("input", {
+        id: "opt-" + o.key,
+        type: "range",
+        min: String(o.min),
+        max: String(o.max),
+        step: String(o.schritt || 1),
+        value: options[o.key],
+        onChange: e => setOption(o.key, Number(e.target.value))
+      }), o.hinweis && /*#__PURE__*/React.createElement("div", {
+        className: "option-hint"
+      }, o.hinweis));
+    }
+
+    if (o.typ === "schalter") {
+      return /*#__PURE__*/React.createElement("div", {
+        key: o.key,
+        className: "option-row toggle",
+        role: "switch",
+        tabIndex: 0,
+        "aria-checked": Boolean(options[o.key]),
+        onClick: () => setOption(o.key, !options[o.key]),
+        onKeyDown: e => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            setOption(o.key, !options[o.key]);
+          }
+        }
+      }, /*#__PURE__*/React.createElement("label", null, o.label), /*#__PURE__*/React.createElement("span", {
+        className: `switch ${options[o.key] ? "on" : ""}`
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "knob"
+      })), o.hinweis && /*#__PURE__*/React.createElement("div", {
+        className: "option-hint"
+      }, o.hinweis));
+    }
+
+    if (o.typ === "auswahl") {
+      return /*#__PURE__*/React.createElement("div", {
+        key: o.key,
+        className: "option-row"
+      }, /*#__PURE__*/React.createElement("label", null, o.label), /*#__PURE__*/React.createElement("div", {
+        className: "option-choices"
+      }, o.werte.map(w => /*#__PURE__*/React.createElement("button", {
+        key: w.wert,
+        className: `option-choice ${options[o.key] === w.wert ? "active" : ""}`,
+        onClick: () => setOption(o.key, w.wert)
+      }, w.label))), o.hinweis && /*#__PURE__*/React.createElement("div", {
+        className: "option-hint"
+      }, o.hinweis));
+    }
+
+    return null;
+  })))),
+
+  /*#__PURE__*/React.createElement("button", {
     className: "options-reset",
-    onClick: () => setOptions({
-      brightness: 126,
-      flicker: true,
-      scanlines: true,
-      fontScale: 100,
-      reduceMotion: false
-    })
-  }, "◄ Zurücksetzen"), /*#__PURE__*/React.createElement("div", {
+    onClick: () => {
+      vergissOptionen();
+      setOptions({ ...DEFAULTS });
+    }
+  }, "\u25c4 Alles zurücksetzen"), /*#__PURE__*/React.createElement("div", {
     className: "options-note"
-  }, "Einstellungen gelten für diese Sitzung."))), /*#__PURE__*/React.createElement("header", {
+  }, "Einstellungen werden auf diesem Gerät gespeichert."))), /*#__PURE__*/React.createElement("header", {
     className: "header"
   }, /*#__PURE__*/React.createElement("div", {
     className: "header-top"
@@ -503,11 +575,6 @@ function Warhammer40KEncyclopedia() {
     }
   }, activeFaction.name.toUpperCase())), /*#__PURE__*/React.createElement("button", {
     className: "gear-btn",
-    onClick: () => setShowTimeline(true),
-    title: "Zeitleiste",
-    "aria-label": "Zeitleiste"
-  }, "⧗"), /*#__PURE__*/React.createElement("button", {
-    className: "gear-btn",
     onClick: () => setShowInfo(true),
     title: "Info & Handbuch",
     "aria-label": "Info und Handbuch"
@@ -524,7 +591,20 @@ function Warhammer40KEncyclopedia() {
     onClick: () => switchFaction(f)
   }, /*#__PURE__*/React.createElement("span", {
     className: "faction-symbol"
-  }, f.symbol), f.shortName)))), /*#__PURE__*/React.createElement("main", {
+  }, f.symbol), f.shortName))), /*#__PURE__*/React.createElement("div", {
+    className: "timeline-bar"
+  }, /*#__PURE__*/React.createElement("button", {
+    className: "timeline-btn",
+    onClick: () => setShowTimeline(true)
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "timeline-btn-symbol"
+  }, "\u29d7"), /*#__PURE__*/React.createElement("span", {
+    className: "timeline-btn-text"
+  }, /*#__PURE__*/React.createElement("b", null, "ZEITLEISTE"), /*#__PURE__*/React.createElement("span", {
+    className: "timeline-btn-sub"
+  }, "Chronik der Galaxis \u2014 War in Heaven bis Era Indomitus")), /*#__PURE__*/React.createElement("span", {
+    className: "timeline-btn-pfeil"
+  }, "\u25b8")))), /*#__PURE__*/React.createElement("main", {
     className: "main-content"
   }, /*#__PURE__*/React.createElement("div", {
     ref: topRef,
@@ -835,7 +915,7 @@ function Warhammer40KEncyclopedia() {
     className: "result-title"
   }, results.title), /*#__PURE__*/React.createElement("div", {
     className: "result-meta"
-  }, /*#__PURE__*/React.createElement("span", null, "◈ ", results.category), /*#__PURE__*/React.createElement("span", null, "◈ ", results.faction)), /*#__PURE__*/React.createElement(ArticleSigil, {
+  }, /*#__PURE__*/React.createElement("span", null, "◈ ", results.category), /*#__PURE__*/React.createElement("span", null, "◈ ", results.faction)), /*#__PURE__*/options.showSigils && /*#__PURE__*/React.createElement(ArticleSigil, {
     seed: imageIdFor(results.title),
     variant: 0
   }), /*#__PURE__*/React.createElement("div", {
@@ -863,10 +943,10 @@ function Warhammer40KEncyclopedia() {
     className: "section-heading"
   }, section.heading), /*#__PURE__*/React.createElement("div", {
     className: "section-content"
-  }, renderLinkedText(section.content))), i === 0 && /*#__PURE__*/React.createElement(ArticleSigil, {
+  }, renderLinkedText(section.content))), i === 0 && /*#__PURE__*/options.showSigils && /*#__PURE__*/React.createElement(ArticleSigil, {
     seed: imageIdFor(results.title),
     variant: 1
-  }), i === 1 && /*#__PURE__*/React.createElement(ArticleSigil, {
+  }), i === 1 && /*#__PURE__*/options.showSigils && /*#__PURE__*/React.createElement(ArticleSigil, {
     seed: imageIdFor(results.title),
     variant: 2
   })))), /*#__PURE__*/React.createElement("div", {

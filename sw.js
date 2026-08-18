@@ -8,7 +8,7 @@
 // When a module is added or removed under js/, add it here too and raise
 // the cache name below.
 
-const CACHE = "datavault-shell-v2";
+const CACHE = "datavault-shell-v3";
 
 const SHELL = [
   "./",
@@ -19,6 +19,7 @@ const SHELL = [
   "./js/main.js",
   "./js/app.js",
   "./js/version.js",
+  "./js/options.js",
   "./js/sigil.js",
   "./js/wiki.js",
   "./js/data/factions.js",

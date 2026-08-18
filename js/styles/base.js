@@ -42,8 +42,9 @@ function baseStyles(colors, options) {
         radial-gradient(ellipse at 50% 120%, ${colors.glow.replace("0.4", "0.10")} 0%, transparent 65%);
       font-family: 'Share Tech Mono', 'Source Serif 4', monospace;
       font-size: ${options.fontScale}%;
+      line-height: ${options.lineHeight / 100};
       color: ${colors.text};
-      text-shadow: 0 0 1px ${colors.glow.replace("0.4", "0.5")};
+      text-shadow: 0 0 ${(options.glow / 100 * 2).toFixed(2)}px ${colors.glow.replace("0.4", String(options.glow / 100))};
       transition: ${options.reduceMotion ? "none" : "all 0.4s ease"};
       filter: brightness(${options.brightness / 100}) contrast(1.04);
     }
@@ -59,9 +60,9 @@ function baseStyles(colors, options) {
       background: repeating-linear-gradient(
         0deg,
         rgba(0,0,0,0) 0px,
-        rgba(0,0,0,0) 2px,
-        rgba(0,0,0,0.09) 3px,
-        rgba(0,0,0,0.09) 4px
+        rgba(0,0,0,0) ${options.scanlineGap - 2}px,
+        rgba(0,0,0,0.09) ${options.scanlineGap - 1}px,
+        rgba(0,0,0,0.09) ${options.scanlineGap}px
       );
       mix-blend-mode: multiply;
     }
@@ -73,7 +74,7 @@ function baseStyles(colors, options) {
       inset: 0;
       pointer-events: none;
       z-index: 9999;
-      background: radial-gradient(ellipse at center, transparent 70%, rgba(0,0,0,0.28) 100%);
+      background: radial-gradient(ellipse at center, transparent 70%, rgba(0,0,0,${(options.vignette / 100).toFixed(2)}) 100%);
       animation: ${options.flicker && !options.reduceMotion ? "crtflicker 3s infinite steps(40)" : "none"};
     }
 
@@ -124,6 +125,58 @@ function baseStyles(colors, options) {
       animation: none !important;
       transition: none !important;
     }
+
+
+    /* ── Barrierefreiheit und Darstellung ───────────────────── */
+
+    /* Hoher Kontrast: Text aufhellen, Effekte zuruecknehmen. */
+    .w40k-app.hoher-kontrast {
+      color: #ffffff;
+      text-shadow: none;
+      filter: brightness(${Math.max(100, options.brightness) / 100}) contrast(1.15);
+    }
+    .w40k-app.hoher-kontrast::before,
+    .w40k-app.hoher-kontrast::after { display: none; }
+    .w40k-app.hoher-kontrast .section-content,
+    .w40k-app.hoher-kontrast .result-summary,
+    .w40k-app.hoher-kontrast p { color: #f2f2f2; }
+    .w40k-app.hoher-kontrast .lore-link { color: ${colors.accent}; }
+
+    /* Groessere Schaltflaechen: bequemer zu treffen. */
+    .w40k-app.grosse-ziele button,
+    .w40k-app.grosse-ziele .faction-btn,
+    .w40k-app.grosse-ziele .cat-btn,
+    .w40k-app.grosse-ziele .chip,
+    .w40k-app.grosse-ziele .option-choice {
+      min-height: 48px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+    }
+    .w40k-app.grosse-ziele .index-item,
+    .w40k-app.grosse-ziele .related-item,
+    .w40k-app.grosse-ziele .tl-event { padding-top: 12px; padding-bottom: 12px; }
+
+    /* Querverweise sichtbar unterstreichen. */
+    .w40k-app.verweise-unterstrichen .lore-link,
+    .w40k-app.verweise-unterstrichen .related-item {
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* Fliesstext mit Serifen — Ueberschriften bleiben unberuehrt. */
+    .w40k-app.serifen .section-content,
+    .w40k-app.serifen .result-summary,
+    .w40k-app.serifen .tl-blurb,
+    .w40k-app.serifen .info-panel p {
+      font-family: 'Source Serif 4', Georgia, serif;
+    }
+
+    /* Eckige Variante. */
+    .w40k-app.eckig button,
+    .w40k-app.eckig input,
+    .w40k-app.eckig .options-panel,
+    .w40k-app.eckig .chip,
+    .w40k-app.eckig .switch { border-radius: 0 !important; }
 
   `;
 }

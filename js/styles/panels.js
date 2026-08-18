@@ -114,6 +114,102 @@ function panelStyles(colors, options) {
       border-top: 1px solid ${colors.primary}33;
     }
 
+
+    /* ── Erweitertes Optionsfenster ─────────────────────────── */
+    .options-panel-gross {
+      width: min(460px, 94vw);
+      max-height: 88vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .options-tabs {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 2px;
+      padding: 10px 12px 0;
+      flex-shrink: 0;
+    }
+
+    .options-tab {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 3px;
+      padding: 8px 2px;
+      background: transparent;
+      border: 1px solid ${colors.primary}33;
+      border-bottom: none;
+      color: ${colors.text}bb;
+      font-family: inherit;
+      font-size: 9px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: ${options.reduceMotion ? "none" : "all 0.15s ease"};
+    }
+
+    .options-tab-symbol { font-size: 14px; line-height: 1; }
+
+    .options-tab:hover { color: ${colors.text}; border-color: ${colors.primary}66; }
+
+    .options-tab.active {
+      background: ${colors.primary}1f;
+      border-color: ${colors.primary};
+      color: ${colors.primary};
+      box-shadow: inset 0 -2px 0 ${colors.primary};
+    }
+
+    .options-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 4px 4px 0;
+      border-top: 1px solid ${colors.primary}44;
+      margin-top: -1px;
+    }
+
+    .options-group { display: block; }
+
+    .option-hint {
+      grid-column: 1 / -1;
+      margin-top: 4px;
+      font-size: 9px;
+      line-height: 1.5;
+      letter-spacing: 0.4px;
+      color: ${colors.text}99;
+      font-style: italic;
+    }
+
+    .option-choices {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 6px;
+    }
+
+    .option-choice {
+      padding: 6px 11px;
+      background: transparent;
+      border: 1px solid ${colors.border}88;
+      border-radius: 2px;
+      color: ${colors.text}cc;
+      font-family: inherit;
+      font-size: 10px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: ${options.reduceMotion ? "none" : "all 0.15s ease"};
+    }
+
+    .option-choice:hover { border-color: ${colors.primary}; color: ${colors.text}; }
+
+    .option-choice.active {
+      background: ${colors.primary}22;
+      border-color: ${colors.primary};
+      color: ${colors.primary};
+    }
+
+    .options-body .option-row:last-child { border-bottom: none; }
+
   `;
 }
 

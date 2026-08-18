@@ -1,6 +1,6 @@
 <!doctype html>
 <!-- ============================================ -->
-<!-- DATAVAULT V0.58 - VORAB UEBERSETZT (kein Babel) -->
+<!-- DATAVAULT V0.59 - VORAB UEBERSETZT (kein Babel) -->
 <!-- ============================================ -->
 <html lang="en">
   <head>
@@ -41,7 +41,7 @@ const {
  * APP VERSION — bump this whenever the app changes, so the displayed number
  * confirms the device is running the latest uploaded file. Shown under the logo.
  * ========================================================================== */
-const APP_VERSION = "v0.58";
+const APP_VERSION = "v0.59";
 
 /* ============================================================================
  * ARTICLE SIGILS — procedural, unique per article.
@@ -413,12 +413,12 @@ const FACTIONS = [{
     primary: "#ffb000",
     secondary: "#cc5500",
     bg: "#0a0700",
-    surface: "#140e02",
+    surface: "#1e1605",
     accent: "#ffcc33",
     glow: "rgba(255,176,0,0.4)",
-    text: "#ffc444",
-    border: "#a86a00",
-    gradient: "linear-gradient(135deg, #140e02 0%, #0a0700 100%)"
+    text: "#ffd98a",
+    border: "#d99a2b",
+    gradient: "linear-gradient(135deg, #1e1605 0%, #0a0700 100%)"
   },
   description: "Mankind's last bastion against the darkness",
   categories: ["Space Marines", "Imperial Guard", "Adeptus Mechanicus", "Inquisition"],
@@ -472,12 +472,12 @@ const FACTIONS = [{
     primary: "#ff2a2a",
     secondary: "#aa0000",
     bg: "#0a0000",
-    surface: "#160202",
+    surface: "#200808",
     accent: "#ff5544",
     glow: "rgba(255,42,42,0.4)",
-    text: "#ff6655",
-    border: "#992020",
-    gradient: "linear-gradient(135deg, #160202 0%, #0a0000 100%)"
+    text: "#ff9b8e",
+    border: "#cc4a44",
+    gradient: "linear-gradient(135deg, #200808 0%, #0a0000 100%)"
   },
   description: "Servants of the Ruinous Powers",
   categories: ["Word Bearers", "World Eaters", "Thousand Sons", "Death Guard"],
@@ -531,12 +531,12 @@ const FACTIONS = [{
     primary: "#00e5d0",
     secondary: "#008a80",
     bg: "#000807",
-    surface: "#021412",
+    surface: "#062220",
     accent: "#5cfff0",
     glow: "rgba(0,229,208,0.4)",
-    text: "#4ce0d4",
-    border: "#0a8077",
-    gradient: "linear-gradient(135deg, #021412 0%, #000807 100%)"
+    text: "#8ff5ec",
+    border: "#22b3a6",
+    gradient: "linear-gradient(135deg, #062220 0%, #000807 100%)"
   },
   description: "Ancient masters of the Webway",
   categories: ["Craftworld", "Harlequins", "Dark Eldar", "Ynnari"],
@@ -590,12 +590,12 @@ const FACTIONS = [{
     primary: "#5cff2a",
     secondary: "#2e8810",
     bg: "#030800",
-    surface: "#0a1402",
+    surface: "#122208",
     accent: "#88ff55",
     glow: "rgba(92,255,42,0.4)",
-    text: "#7aee4c",
-    border: "#3a8818",
-    gradient: "linear-gradient(135deg, #0a1402 0%, #030800 100%)"
+    text: "#b0f98c",
+    border: "#63bf38",
+    gradient: "linear-gradient(135deg, #122208 0%, #030800 100%)"
   },
   description: "Da biggest and da strongest",
   categories: ["Boyz", "Vehicles", "Warbosses", "Klans"],
@@ -649,12 +649,12 @@ const FACTIONS = [{
     primary: "#00ff7a",
     secondary: "#008844",
     bg: "#000604",
-    surface: "#02140c",
+    surface: "#062216",
     accent: "#5cffaa",
     glow: "rgba(0,255,122,0.4)",
-    text: "#4cf0a0",
-    border: "#0a8850",
-    gradient: "linear-gradient(135deg, #02140c 0%, #000604 100%)"
+    text: "#8ffcc8",
+    border: "#22bf7e",
+    gradient: "linear-gradient(135deg, #062216 0%, #000604 100%)"
   },
   description: "Ancient undying machines of death",
   categories: ["Warriors", "Vehicles", "Lords", "Dynasties"],
@@ -708,12 +708,12 @@ const FACTIONS = [{
     primary: "#22a0ff",
     secondary: "#0d5db0",
     bg: "#00040a",
-    surface: "#021018",
+    surface: "#061c28",
     accent: "#5cc0ff",
     glow: "rgba(34,160,255,0.4)",
-    text: "#4cb0ff",
-    border: "#1565b0",
-    gradient: "linear-gradient(135deg, #021018 0%, #00040a 100%)"
+    text: "#93cfff",
+    border: "#3d93e0",
+    gradient: "linear-gradient(135deg, #061c28 0%, #00040a 100%)"
   },
   description: "Warriors of the Greater Good",
   categories: ["Fire Caste", "Battlesuits", "Sept Worlds", "Allies"],
@@ -767,12 +767,12 @@ const FACTIONS = [{
     primary: "#c8ccd0",
     secondary: "#8a9098",
     bg: "#07080a",
-    surface: "#111418",
+    surface: "#1b1f26",
     accent: "#e8ecf0",
     glow: "rgba(200,204,208,0.35)",
-    text: "#c0c6cc",
-    border: "#6a7078",
-    gradient: "linear-gradient(135deg, #111418 0%, #07080a 100%)"
+    text: "#dde2e8",
+    border: "#9aa2ac",
+    gradient: "linear-gradient(135deg, #1b1f26 0%, #07080a 100%)"
   },
   description: "Lesser-known peoples, powers and species of the galaxy",
   categories: ["Xenos", "Human", "Abhuman", "Lost"],
@@ -1330,7 +1330,7 @@ function Warhammer40KEncyclopedia() {
   const [showInfo, setShowInfo] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
   const [options, setOptions] = useState({
-    brightness: 118,
+    brightness: 126,
     // percent (60–160)
     flicker: true,
     // CRT flicker animation
@@ -1703,8 +1703,8 @@ function Warhammer40KEncyclopedia() {
         0deg,
         rgba(0,0,0,0) 0px,
         rgba(0,0,0,0) 2px,
-        rgba(0,0,0,0.18) 3px,
-        rgba(0,0,0,0.18) 4px
+        rgba(0,0,0,0.09) 3px,
+        rgba(0,0,0,0.09) 4px
       );
       mix-blend-mode: multiply;
     }
@@ -1716,31 +1716,31 @@ function Warhammer40KEncyclopedia() {
       inset: 0;
       pointer-events: none;
       z-index: 9999;
-      background: radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%);
+      background: radial-gradient(ellipse at center, transparent 70%, rgba(0,0,0,0.28) 100%);
       animation: ${options.flicker && !options.reduceMotion ? "crtflicker 3s infinite steps(40)" : "none"};
     }
 
     @keyframes crtflicker {
       0%   { opacity: 1; }
-      8%   { opacity: 0.82; }
+      8%   { opacity: 0.92; }
       9%   { opacity: 1; }
       18%  { opacity: 1; }
-      19%  { opacity: 0.72; }
+      19%  { opacity: 0.88; }
       20%  { opacity: 0.95; }
-      21%  { opacity: 0.78; }
+      21%  { opacity: 0.90; }
       22%  { opacity: 1; }
       40%  { opacity: 1; }
-      41%  { opacity: 0.85; }
+      41%  { opacity: 0.93; }
       42%  { opacity: 1; }
       58%  { opacity: 1; }
-      59%  { opacity: 0.6; }
-      60%  { opacity: 0.9; }
+      59%  { opacity: 0.84; }
+      60%  { opacity: 0.95; }
       61%  { opacity: 1; }
       75%  { opacity: 1; }
-      76%  { opacity: 0.8; }
+      76%  { opacity: 0.92; }
       77%  { opacity: 1; }
       90%  { opacity: 1; }
-      91%  { opacity: 0.74; }
+      91%  { opacity: 0.89; }
       92%  { opacity: 0.95; }
       93%  { opacity: 1; }
     }
@@ -1845,7 +1845,7 @@ function Warhammer40KEncyclopedia() {
     }
     .options-reset:hover { background: ${colors.glow}; }
     .options-note {
-      text-align: center; font-size: 10px; color: ${colors.text}77;
+      text-align: center; font-size: 10px; color: ${colors.text}cc;
       margin-top: 12px; letter-spacing: 1px;
     }
 
@@ -1962,7 +1962,7 @@ function Warhammer40KEncyclopedia() {
       font-family: 'Cinzel', serif;
       font-size: 9px;
       letter-spacing: 4px;
-      color: ${colors.text}88;
+      color: ${colors.text}dd;
     }
 
     .faction-bar {
@@ -1982,7 +1982,7 @@ function Warhammer40KEncyclopedia() {
       background: transparent;
       border: none;
       border-right: 1px solid ${colors.border}22;
-      color: ${colors.text}66;
+      color: ${colors.text}bb;
       font-family: 'Cinzel', serif;
       font-size: 10px;
       letter-spacing: 1px;
@@ -2095,7 +2095,7 @@ function Warhammer40KEncyclopedia() {
       border-color: ${colors.primary};
       box-shadow: 0 0 0 2px ${colors.glow}, inset 0 0 20px ${colors.glow.replace("0.4", "0.05")};
     }
-    .search-input::placeholder { color: ${colors.text}44; font-style: italic; }
+    .search-input::placeholder { color: ${colors.text}aa; font-style: italic; }
 
     .search-btn {
       padding: 14px 28px;
@@ -2124,7 +2124,7 @@ function Warhammer40KEncyclopedia() {
       padding: 4px 12px;
       background: transparent;
       border: 1px solid ${colors.border}44;
-      color: ${colors.text}88;
+      color: ${colors.text}dd;
       font-family: 'Cinzel', serif;
       font-size: 9px;
       letter-spacing: 1px;
@@ -2149,7 +2149,7 @@ function Warhammer40KEncyclopedia() {
       padding: 5px 12px;
       background: ${colors.surface};
       border: 1px solid ${colors.border}33;
-      color: ${colors.text}66;
+      color: ${colors.text}bb;
       font-size: 11px;
       cursor: pointer;
       font-family: 'Cinzel', serif;
@@ -2267,7 +2267,7 @@ function Warhammer40KEncyclopedia() {
       font-family: 'Cinzel', serif;
       font-size: 9px;
       letter-spacing: 2px;
-      color: ${colors.text}88;
+      color: ${colors.text}dd;
       text-transform: uppercase;
       flex-wrap: wrap;
     }
@@ -2296,7 +2296,7 @@ function Warhammer40KEncyclopedia() {
       content: '"';
       font-family: 'Cinzel Decorative', serif;
       font-size: 48px;
-      color: ${colors.primary}44;
+      color: ${colors.primary}99;
       position: absolute;
       top: -8px;
       left: 12px;
@@ -2411,7 +2411,7 @@ function Warhammer40KEncyclopedia() {
       font-family: 'Cinzel', serif;
       font-size: 9px;
       letter-spacing: 1px;
-      color: ${colors.text}66;
+      color: ${colors.text}bb;
       text-transform: uppercase;
       flex-shrink: 0;
     }
@@ -2446,7 +2446,7 @@ function Warhammer40KEncyclopedia() {
       cursor: pointer;
       transition: all 0.15s;
       font-size: 12px;
-      color: ${colors.text}99;
+      color: ${colors.text}e6;
     }
     .related-item:last-child { border-bottom: none; }
     .related-item:hover { background: ${colors.glow.replace("0.4", "0.1")}; color: ${colors.text}; }
@@ -2510,7 +2510,7 @@ function Warhammer40KEncyclopedia() {
       font-family: 'Cinzel', serif;
       font-size: 9px;
       letter-spacing: 2px;
-      color: ${colors.text}55;
+      color: ${colors.text}aa;
       text-transform: uppercase;
     }
 
@@ -2567,7 +2567,7 @@ function Warhammer40KEncyclopedia() {
       font-family: 'Cinzel', serif;
       font-size: 8px;
       letter-spacing: 2px;
-      color: ${colors.text}66;
+      color: ${colors.text}bb;
       text-transform: uppercase;
       border: 1px solid ${colors.border}44;
       padding: 2px 6px;
@@ -2584,7 +2584,7 @@ function Warhammer40KEncyclopedia() {
       font-family: 'Cinzel', serif;
       font-size: 8px;
       letter-spacing: 2px;
-      color: ${colors.text}44;
+      color: ${colors.text}99;
       text-transform: uppercase;
       opacity: 0.6;
       transition: all 0.2s;
@@ -2637,7 +2637,7 @@ function Warhammer40KEncyclopedia() {
     }
     .index-card-desc {
       font-size: 10px;
-      color: ${colors.text}66;
+      color: ${colors.text}bb;
       line-height: 1.4;
     }
 
@@ -2666,7 +2666,7 @@ function Warhammer40KEncyclopedia() {
       font-family: 'Cinzel', serif;
       font-size: 9px;
       letter-spacing: 2px;
-      color: ${colors.text}66;
+      color: ${colors.text}bb;
       text-transform: uppercase;
       margin-top: 4px;
     }
@@ -2695,7 +2695,7 @@ function Warhammer40KEncyclopedia() {
     .index-entry-num {
       font-family: 'Cinzel', serif;
       font-size: 12px;
-      color: ${colors.primary}88;
+      color: ${colors.primary}dd;
       flex-shrink: 0;
       width: 22px;
     }
@@ -2708,7 +2708,7 @@ function Warhammer40KEncyclopedia() {
     }
     .index-entry-blurb {
       font-size: 11px;
-      color: ${colors.text}88;
+      color: ${colors.text}dd;
       line-height: 1.4;
     }
     .index-entry-src {
@@ -2721,7 +2721,7 @@ function Warhammer40KEncyclopedia() {
       width: 100%;
       padding: 12px 14px;
       margin-bottom: 14px;
-      background: ${colors.surface || "#140e02"};
+      background: ${colors.surface || "#1e1605"};
       border: 1px solid ${colors.primary}66;
       color: ${colors.text};
       font-family: 'Share Tech Mono', monospace;
@@ -2733,7 +2733,7 @@ function Warhammer40KEncyclopedia() {
       border-color: ${colors.primary};
       box-shadow: 0 0 0 2px ${colors.glow};
     }
-    .index-filter::placeholder { color: ${colors.text}55; }
+    .index-filter::placeholder { color: ${colors.text}aa; }
 
     /* Minor factions list */
     .minor-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
@@ -2758,7 +2758,7 @@ function Warhammer40KEncyclopedia() {
       font-family: 'Source Serif 4', serif; font-size: 12px;
       color: ${colors.text}bb; line-height: 1.5;
     }
-    .minor-entry-arrow { color: ${colors.primary}88; font-size: 12px; flex-shrink: 0; }
+    .minor-entry-arrow { color: ${colors.primary}dd; font-size: 12px; flex-shrink: 0; }
     .index-group-head {
       font-family: 'Cinzel', serif;
       font-size: 13px;
@@ -2776,7 +2776,7 @@ function Warhammer40KEncyclopedia() {
       margin-bottom: 6px;
     }
     .index-entry-arrow {
-      color: ${colors.text}44;
+      color: ${colors.text}99;
       font-size: 11px;
       opacity: 0.5;
       transition: all 0.15s;
@@ -2874,7 +2874,7 @@ function Warhammer40KEncyclopedia() {
       font-family: 'Cinzel', serif;
       font-size: 8px;
       letter-spacing: 0.5px;
-      color: ${colors.text}88;
+      color: ${colors.text}dd;
       border: 1px solid ${colors.border}33;
       padding: 2px 6px;
       text-transform: uppercase;
@@ -2891,7 +2891,7 @@ function Warhammer40KEncyclopedia() {
       font-family: 'Cinzel', serif;
       font-size: 9px;
       letter-spacing: 0.5px;
-      color: ${colors.text}66;
+      color: ${colors.text}bb;
       text-transform: uppercase;
     }
     .chip-dot {
@@ -2913,21 +2913,21 @@ function Warhammer40KEncyclopedia() {
       font-family: 'Cinzel', serif;
       font-size: 9px;
       letter-spacing: 5px;
-      color: ${colors.text}55;
+      color: ${colors.text}aa;
       text-transform: uppercase;
       margin-bottom: 24px;
     }
 
     .welcome-desc {
       font-size: 13px;
-      color: ${colors.text}99;
+      color: ${colors.text}e6;
       line-height: 1.7;
       max-width: 480px;
       margin: 0 auto;
     }
 
     .ornament {
-      color: ${colors.primary}66;
+      color: ${colors.primary}bb;
       font-size: 10px;
       letter-spacing: 8px;
       margin: 12px 0;
@@ -2940,7 +2940,7 @@ function Warhammer40KEncyclopedia() {
       font-family: 'Cinzel', serif;
       font-size: 8px;
       letter-spacing: 2px;
-      color: ${colors.text}33;
+      color: ${colors.text}88;
       text-transform: uppercase;
     }
   `;
@@ -3050,7 +3050,7 @@ function Warhammer40KEncyclopedia() {
   }))), /*#__PURE__*/React.createElement("button", {
     className: "options-reset",
     onClick: () => setOptions({
-      brightness: 118,
+      brightness: 126,
       flicker: true,
       scanlines: true,
       fontScale: 100,

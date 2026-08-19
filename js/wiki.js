@@ -280,4 +280,15 @@ function paragraphWithLinks(p) {
   return out;
 }
 
-export { WIKI_SOURCES, wikiUrl, stripHtml, parseArticleToEntry, paragraphWithLinks };
+export {
+  WIKI_SOURCES,
+  wikiUrl,
+  stripHtml,
+  parseArticleToEntry,
+  paragraphWithLinks,
+  searchWiki,
+  searchAllWikis,
+  loadCategoryFrom,
+  loadCategoryMerged,
+  fetchArticle,
+};

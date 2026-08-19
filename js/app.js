@@ -1,6 +1,17 @@
 import { APP_VERSION } from "./version.js";
 import { imageIdFor, sigilGeometry } from "./sigil.js";
-import { WIKI_SOURCES, wikiUrl, stripHtml, parseArticleToEntry, paragraphWithLinks } from "./wiki.js";
+import {
+  WIKI_SOURCES,
+  wikiUrl,
+  stripHtml,
+  parseArticleToEntry,
+  paragraphWithLinks,
+  searchWiki,
+  searchAllWikis,
+  loadCategoryFrom,
+  loadCategoryMerged,
+  fetchArticle,
+} from "./wiki.js";
 import { FACTIONS } from "./data/factions.js";
 import { SEARCH_CATEGORIES, INDEX_TYPES } from "./data/search.js";
 import { CATEGORY_MAP } from "./data/categories.js";

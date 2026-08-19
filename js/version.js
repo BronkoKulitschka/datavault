@@ -2,6 +2,6 @@
 // Versionsnummer. Bei jeder Aenderung hier hochzaehlen.
 // ==========================================================================
 
-const APP_VERSION = "v0.61";
+const APP_VERSION = "v0.62";
 
 export { APP_VERSION };
